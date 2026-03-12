@@ -21,14 +21,24 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(csrf -> csrf.disable())
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/actuator/health", "/auth/login").permitAll()
-                .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
-                .requestMatchers("/api/**").hasAnyAuthority("SCOPE_blueprints.read", "SCOPE_blueprints.write")
-                .anyRequest().authenticated()
-            )
-            .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()));
+                .csrf(csrf -> csrf.disable())
+                .authorizeHttpRequests(auth -> auth
+                        // ── Públicos: no requieren token ──────────────────────────────
+                        .requestMatchers("/actuator/health", "/auth/login").permitAll()
+                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+
+                        // ── Actividad 2 / 4: inspeccionar claims del token activo ─────
+                        // Requiere token válido pero cualquier scope sirve
+                        .requestMatchers("/auth/token-info").authenticated()
+
+                        // ── Actividad 3: endpoints de negocio protegidos por scope ────
+                        .requestMatchers("/api/**")
+                        .hasAnyAuthority("SCOPE_blueprints.read", "SCOPE_blueprints.write")
+
+                        .anyRequest().authenticated()
+                )
+                .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()));
+
         return http.build();
     }
 
@@ -39,14 +49,18 @@ public class SecurityConfig {
 
     @Bean
     public JwtDecoder jwtDecoder(JwtKeyProvider keyProvider) {
-        return NimbusJwtDecoder.withPublicKey((java.security.interfaces.RSAPublicKey) keyProvider.publicKey()).build();
+        return NimbusJwtDecoder
+                .withPublicKey((java.security.interfaces.RSAPublicKey) keyProvider.publicKey())
+                .build();
     }
 
     @Bean
     public JwtEncoder jwtEncoder(JwtKeyProvider keyProvider) {
-        RSAKey rsaKey = new RSAKey.Builder((java.security.interfaces.RSAPublicKey) keyProvider.publicKey())
+        RSAKey rsaKey = new RSAKey.Builder(
+                (java.security.interfaces.RSAPublicKey) keyProvider.publicKey())
                 .privateKey(keyProvider.privateKey())
                 .build();
-        return new NimbusJwtEncoder(new ImmutableJWKSet<SecurityContext>(new JWKSet(rsaKey)));
+        return new NimbusJwtEncoder(
+                new ImmutableJWKSet<SecurityContext>(new JWKSet(rsaKey)));
     }
 }
