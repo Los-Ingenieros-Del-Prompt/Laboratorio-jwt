@@ -1,4 +1,6 @@
-### Login (obtener token)
+
+# ── 1. Login – obtener token ─────────────────────────────────────────────────
+
 POST http://localhost:8080/auth/login
 Content-Type: application/json
 
@@ -7,6 +9,47 @@ Content-Type: application/json
   "password": "student123"
 }
 
-### Listar blueprints (usar token)
+### Copia el access_token de la respuesta y pégalo en @access_token:
+@access_token = "eyJhbGciOiJSUzI1NiJ9.eyJpc3MiOiJodHRwczovL2RlY3Npcy1lY2kvYmx1ZXByaW50cyIsInN1YiI6InN0dWRlbnQiLCJleHAiOjE3NzMzNTI0MDMsImlhdCI6MTc3MzM0ODgwMywic2NvcGUiOiJibHVlcHJpbnRzLnJlYWQgYmx1ZXByaW50cy53cml0ZSJ9.g3Dih3iwxoG9ETYDfxFXuOpqXpkVmHM2R6QwHjgUQY1LO3JlIRdoPb4sq7IcxD34qG5xXdRSYewD6MSwizkFXr16gJXgTV6Cm1_ft_YtLFE_I6hAOfMDgR7QkkqLhJbHzaAltcBoL2UxF5IJw8PWbkBfNo4ZkLEbm8Vd3IDgfDsb-uA1kUUSFOb76GpaAfUfjhx2eYvBfDDiR31OkndMddIytHx99ghauxngJ4NN2PIBC5eGBhTvmP7E-RsPaHBEhM7pwUFbvK9yF5O211p9pNzfTiJuF_B-__warNyl2_hS06eW6rsuyAQve6WuftZ3KLjfaOFVrDUirjeC3YIsIQ"
+
+### ── 2. Inspeccionar claims del token ─────────────────────
+GET http://localhost:8080/auth/token-info
+Authorization: Bearer {{access_token}}
+
+### ── 3. Listar todos los blueprints (scope: blueprints.read) ─────────────────
 GET http://localhost:8080/api/blueprints
 Authorization: Bearer {{access_token}}
+
+### ── 4. Obtener blueprint por ID (scope: blueprints.read) ───────────────────
+GET http://localhost:8080/api/blueprints/b1
+Authorization: Bearer {{access_token}}
+
+### ── 5. Obtener blueprints por autor (scope: blueprints.read) ───────────────
+GET http://localhost:8080/api/blueprints/author/student
+Authorization: Bearer {{access_token}}
+
+### ── 6. Crear blueprint (scope: blueprints.write) ───────────────────────────
+POST http://localhost:8080/api/blueprints
+Authorization: Bearer {{access_token}}
+Content-Type: application/json
+
+{
+  "name": "Plano nuevo",
+  "author": "student"
+}
+
+### ── 7. Actualizar blueprint (scope: blueprints.write) ──────────────────────
+PUT http://localhost:8080/api/blueprints/b1
+Authorization: Bearer {{access_token}}
+Content-Type: application/json
+
+{
+  "name": "Casa de campo (actualizada)"
+}
+
+### ── 8. Eliminar blueprint (scope: blueprints.write) ────────────────────────
+DELETE http://localhost:8080/api/blueprints/b2
+Authorization: Bearer {{access_token}}
+
+### ── 9. Sin token → debe retornar 401 ───────────────────────────────────────
+GET http://localhost:8080/api/blueprints

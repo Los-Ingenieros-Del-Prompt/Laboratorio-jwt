@@ -120,8 +120,7 @@ public class AuthController {
             summary = "Inspeccionar claims del token actual",
             description = """
             Retorna las claims del JWT presentado en el header Authorization.
-            Útil para la **Actividad 2** (analizar claims) y la **Actividad 4**
-            (verificar el TTL configurado sin necesidad de copiar el token a jwt.io).
+            
             """,
             security = @SecurityRequirement(name = "bearer-jwt")
     )
